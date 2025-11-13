@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      video {
+        max-width: 100%;
+        max-height: 60dvh;
+      }
+    </style>
+  </head>
+  <body>
+    <video
+      id="test_html5_api"
+      class="vjs-tech"
+      preload="auto"
+      data-setup="{}"
+      tabindex="-1"
+    >
+      <source
+        src="https://mirror.clarkson.edu/blender/demo/movies/BBB/bbb_sunflower_1080p_30fps_normal.mp4"
+        type="video/mp4"
+      />
+      <p class="vjs-no-js">
+        To view this video please enable JavaScript, and consider upgrading to a
+        web browser that
+        <a
+          href="http://videojs.com/html5-video-support/"
+          target="_blank"
+          class="vjs-hidden"
+          hidden="hidden"
+          >supports HTML5 video</a
+        >
+      </p>
+    </video>
+    <button id="js-play">Play</button><button id="js-pause">Pause</button>
+    <script src="https://unpkg.com/libass-wasm@4.1.0/dist/js/subtitles-octopus.js"></script>
+
+    <script>
+      const play = document.querySelector("#js-play");
+      const pause = document.querySelector("#js-pause");
+      const video = document.querySelector("video");
+
+      play.addEventListener("click", () => {
+        video.play();
+      });
+
+      pause.addEventListener("click", () => {
+        video.pause();
+      });
+    </script>
+
+    <script>
+      const options = {
+        video: document.querySelector("video"), // HTML5 video element
+        subUrl: "/static/sub.ass",
+        // fonts: [
+        //   "/JavascriptSubtitlesOctopus/fonts/Arial.ttf",
+        //   "/JavascriptSubtitlesOctopus/fonts/TimesNewRoman.ttf",
+        // ],
+        //onReady: onReadyFunction,
+        //debug: true,
+        workerUrl:
+          "/JavascriptSubtitlesOctopus/assets/js/subtitles-octopus-worker.js",
+      };
+      var instance = new SubtitlesOctopus(options);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "subarashi",
+  "version": "1.0.0",
+  "description": "Chrome extension to load SubtitleOctopus on Crunchyroll videos",
+  "scripts": {
+    "build": "tsc && rsync -av --exclude='.git' JavascriptSubtitlesOctopus static manifest.json popup.html build/"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.1.28",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Subarashi",
+  "version": "1.0.0",
+  "description": "Load custom subtitles on Crunchyroll videos",
+  "permissions": ["activeTab", "scripting"],
+  "host_permissions": ["*://*.crunchyroll.com/*"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Load Subtitles"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "JavascriptSubtitlesOctopus/assets/js/*",
+        "static/sub.ass"
+      ],
+      "matches": ["*://*.crunchyroll.com/*"]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  }
+}
