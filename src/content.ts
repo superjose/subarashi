@@ -1,26 +1,35 @@
 /// <reference path="./typings/libass-wasm.d.ts" />
-alert('we made it 🐥!')
-interface Window {
-  subarashiLoaded?: boolean;
+import "libass-wasm";
+import { SubtitlesOctopus } from "./typings/libass-wasm";
+
+// Extend window type for our usage
+declare global {
+  interface Window {
+    subarashiLoaded?: boolean;
+    subtitlesOctopus?: typeof SubtitlesOctopus;
+  }
 }
 
-let observer: MutationObserver | null = null;
+// Running in MAIN world (page context), so we have access to chrome.runtime
+// but we're in the same JavaScript context as the page
+
+console.log('[Subarashi] Content script loaded in MAIN world');
 
 function waitForVideo(): Promise<HTMLVideoElement> {
   return new Promise((resolve) => {
-    console.log('Waiting for video');
+    console.log('[Subarashi] Waiting for video element...');
     const video = document.querySelector('video');
     if (video) {
-      console.log('Video found');
+      console.log('[Subarashi] Video found immediately');
       resolve(video);
       return;
     }
 
-    observer = new MutationObserver(() => {
+    const observer = new MutationObserver(() => {
       const video = document.querySelector('video');
       if (video) {
-        observer?.disconnect();
-        console.log('Video found 2');
+        observer.disconnect();
+        console.log('[Subarashi] Video found via observer');
         resolve(video);
       }
     });
@@ -31,91 +40,62 @@ function waitForVideo(): Promise<HTMLVideoElement> {
     });
   });
 }
-function loadSubtitleOctopus(video: HTMLVideoElement) {
-  // Get extension URLs (only works in content script context)
-  const scriptUrl = chrome.runtime.getURL('libass-wasm/subtitles-octopus.js');
-  const subUrl = chrome.runtime.getURL('sub.ass');
-  const workerUrl = chrome.runtime.getURL('libass-wasm/subtitles-octopus-worker.js');
 
-  console.log('[Subarashi] Script URL:', scriptUrl);
-  console.log('[Subarashi] Sub URL:', subUrl);
-  console.log('[Subarashi] Worker URL:', workerUrl);
+function loadSubtitleOctopus(video: HTMLVideoElement, subContent: string) {
+  console.log('[Subarashi] Loading SubtitlesOctopus library...');
+  console.log('[Subarashi] Subtitle content length:', subContent.length);
 
-  // Create a wrapper script file as a blob to bypass CSP
-  const initCode = `
-    (function() {
-      console.log('[Subarashi Page Context] Checking for SubtitlesOctopus...');
-      console.log('[Subarashi Page Context] window.SubtitlesOctopus:', window.SubtitlesOctopus);
+  // Inject the SubtitlesOctopus library
+  try {
 
-      if (!window.SubtitlesOctopus) {
-        console.error('[Subarashi Page Context] SubtitlesOctopus not found on window!');
-        return;
-      }
-
-      const video = document.querySelector('video');
-      if (!video) {
-        console.error('[Subarashi Page Context] Video element not found!');
-        return;
-      }
-
-      console.log('[Subarashi Page Context] Initializing SubtitlesOctopus...');
-      try {
-        new window.SubtitlesOctopus({
-          video: video,
-          subUrl: '${subUrl}',
-          workerUrl: '${workerUrl}'
-        });
-        console.log('[Subarashi Page Context] Subtitles initialized successfully!');
-      } catch (error) {
-        console.error('[Subarashi Page Context] Error initializing:', error);
-      }
-    })();
-  `;
-
-  // First, inject the SubtitlesOctopus library script
-  const libScript = document.createElement('script');
-  libScript.src = scriptUrl;
-
-  libScript.onerror = (error) => {
-    console.error('[Subarashi] Failed to load SubtitlesOctopus library:', error);
-  };
-
-  libScript.onload = () => {
-    console.log('[Subarashi] SubtitlesOctopus library loaded');
-
-    // Create a blob URL for the init script to bypass CSP inline restrictions
-    const blob = new Blob([initCode], { type: 'application/javascript' });
-    const blobUrl = URL.createObjectURL(blob);
-
-    const initScript = document.createElement('script');
-    initScript.src = blobUrl;
-
-    initScript.onload = () => {
-      console.log('[Subarashi] Initialization script executed');
-      URL.revokeObjectURL(blobUrl); // Clean up
-    };
-
-    initScript.onerror = (error) => {
-      console.error('[Subarashi] Failed to execute initialization script:', error);
-      URL.revokeObjectURL(blobUrl); // Clean up
-    };
-
-    document.head.appendChild(initScript);
-  };
-
-  document.head.appendChild(libScript);
-  console.log('[Subarashi] Library script tag appended');
+    new window.subtitlesOctopus.exports({
+      video: video,
+      subContent: subContent,  // Use subtitle content instead of URL
+      // workerUrl: workerUrl
+    });
+  } catch (error) {
+    console.error('[Subarashi] Error loading SubtitlesOctopus:', error);
+    console.log(window)
+  }
 }
-function main() {
 
+
+// Listen for messages from the popup (via postMessage)
+window.addEventListener('message', (event) => {
+  // Verify the message is from our extension
+  if (event.source !== window) return;
+
+  console.log('[Subarashi] Received message:', event.data);
+
+  if (event.data.type === 'SUBARASHI_LOAD_SUBTITLES') {
+    console.log('[Subarashi] Load subtitles command received');
+
+    // const { subContent, scriptUrl } = event.data;
+
+    // if (!subContent || !scriptUrl) {
+    //   console.error('[Subarashi] Missing required data in message:', event.data);
+    //   return;
+    // }
+
+
+    console.log("Before video pushy");
+    waitForVideo().then((video) => {
+      loadSubtitleOctopus(video, event.data.subContent);
+    }).catch(error => {
+      console.error('[Subarashi] Error loading subtitles:', error);
+    });
+  }
+});
+
+function main() {
+  // Prevent multiple loads
   if (window.subarashiLoaded) {
-    console.log('Subarashi already loaded 2');
+    console.log('[Subarashi] Already loaded, skipping...');
     return;
   }
-  waitForVideo().then((video) => {
-    loadSubtitleOctopus(video);
-    window.subarashiLoaded = true;
-  });
+  window.subarashiLoaded = true;
+
+  console.log('[Subarashi] Content script ready and waiting for commands...');
 }
 
 main();
