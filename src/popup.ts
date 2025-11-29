@@ -29,16 +29,10 @@ function popup() {
 
       console.log('[Subarashi Popup] Subtitle file loaded, length:', subContent.length);
 
-      // Get the extension URLs for the worker
-      // const workerUrl = chrome.runtime.getURL('libass-wasm/subtitles-octopus-worker.js');
-      // const scriptUrl = chrome.runtime.getURL('libass-wasm/subtitles-octopus.js');
-
-      // Prepare the message data
+      // Prepare the message data - we'll use the iframe's existing SubtitlesOctopus files
       const messageData = {
         type: 'SUBARASHI_LOAD_SUBTITLES',
-        subContent: subContent,
-        // workerUrl: workerUrl,
-        // scriptUrl: scriptUrl
+        subContent: subContent
       };
 
       console.log('[Subarashi Popup] Sending message to content script...');

@@ -41,21 +41,76 @@ function waitForVideo(): Promise<HTMLVideoElement> {
   });
 }
 
+function getVelocityCanvas(): HTMLCanvasElement | null {
+  return document.querySelector('#velocity-canvas');
+}
+
+// function createCanvas(velocityCanvas: HTMLCanvasElement): { canvas: HTMLCanvasElement, canvasParent: HTMLDivElement } {
+//   const canvas = document.createElement('canvas');
+//   canvas.className = 'js-subarashi-canvas';
+//   canvas.width = velocityCanvas.width * 2;
+//   canvas.height = velocityCanvas.height * 2;
+//   canvas.style.position = 'absolute';
+//   canvas.style.top = `${-velocityCanvas.height}px`;
+//   canvas.style.left = ' 0';
+//   canvas.style.pointerEvents = 'none';
+
+//   const canvasParent = document.createElement('div');
+//   canvasParent.className = 'js-subarashi-canvas-parent';
+//   canvasParent.appendChild(canvas);
+//   canvasParent.style.position = 'relative';
+//   canvasParent.style.left = '-50%';
+//   canvasParent.style.transform = 'translateX(50%)';
+//   return { canvas, canvasParent };
+
+// }
+
+// function monitorCanvas(velocityCanvas: HTMLCanvasElement, subarashiCanvas: HTMLCanvasElement) {
+//   const observer = new MutationObserver(() => {
+//     if (velocityCanvas.width !== subarashiCanvas.width || velocityCanvas.height !== subarashiCanvas.height) {
+//       subarashiCanvas.width = velocityCanvas.width;
+//       subarashiCanvas.height = velocityCanvas.height;
+//     }
+//   });
+//   observer.observe(velocityCanvas, { attributes: true });
+// }
+
+function processLibassCanvas(canvas: HTMLCanvasElement | null) {
+  if (!canvas) {
+    console.error('Libass canvas not found');
+    return;
+  }
+  canvas.style.transform = 'translateX(-50%)';
+  canvas.style.left = '50%';
+}
+
 function loadSubtitleOctopus(video: HTMLVideoElement, subContent: string) {
   console.log('[Subarashi] Loading SubtitlesOctopus library...');
   console.log('[Subarashi] Subtitle content length:', subContent.length);
+  const workerUrl = './assets/libass-wasm/4-0-0/subtitles-octopus-worker.js'
+  const velocityCanvas = getVelocityCanvas();
+  if (!velocityCanvas) {
+    console.error('Crunchyroll\'s Velocity canvas not found');
+    return;
+  }
+  // const { canvas, canvasParent } = createCanvas(velocityCanvas);
+  // video.parentElement?.appendChild(canvasParent);
+  // monitorCanvas(velocityCanvas, canvas);
 
-  // Inject the SubtitlesOctopus library
+  // Initialize SubtitlesOctopus
   try {
-
     new window.subtitlesOctopus.exports({
       video: video,
-      subContent: subContent,  // Use subtitle content instead of URL
-      // workerUrl: workerUrl
+      subContent: subContent,
+      workerUrl: workerUrl,
+      // canvas: canvasParent
     });
+
+    processLibassCanvas(document.querySelector('canvas.libassjs-canvas') as HTMLCanvasElement);
+
+    console.log('[Subarashi] SubtitlesOctopus initialized successfully');
   } catch (error) {
     console.error('[Subarashi] Error loading SubtitlesOctopus:', error);
-    console.log(window)
   }
 }
 
@@ -70,17 +125,15 @@ window.addEventListener('message', (event) => {
   if (event.data.type === 'SUBARASHI_LOAD_SUBTITLES') {
     console.log('[Subarashi] Load subtitles command received');
 
-    // const { subContent, scriptUrl } = event.data;
+    const { subContent } = event.data;
 
-    // if (!subContent || !scriptUrl) {
-    //   console.error('[Subarashi] Missing required data in message:', event.data);
-    //   return;
-    // }
+    if (!subContent) {
+      console.error('[Subarashi] Missing subtitle content in message:', event.data);
+      return;
+    }
 
-
-    console.log("Before video pushy");
     waitForVideo().then((video) => {
-      loadSubtitleOctopus(video, event.data.subContent);
+      loadSubtitleOctopus(video, subContent);
     }).catch(error => {
       console.error('[Subarashi] Error loading subtitles:', error);
     });
