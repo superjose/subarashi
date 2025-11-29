@@ -8,11 +8,13 @@
   },
   "devDependencies": {
     "@types/chrome": "^0.1.28",
+    "@types/webextension-polyfill": "^0.12.4",
     "typescript": "^5.9.3",
     "vite": "^7.2.2",
     "vite-plugin-static-copy": "^3.1.4"
   },
   "dependencies": {
-    "libass-wasm": "^4.1.0"
+    "libass-wasm": "^4.1.0",
+    "webextension-polyfill": "^0.12.0"
   }
 }

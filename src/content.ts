@@ -84,6 +84,15 @@ function processLibassCanvas(canvas: HTMLCanvasElement | null) {
   canvas.style.left = '50%';
 }
 
+function hideCrunchyCanvas() {
+  const velocityCanvas = getVelocityCanvas();
+  if (!velocityCanvas) {
+    console.warn('[Subarashi] Crunchyroll\'s Velocity canvas not found');
+    return;
+  }
+  velocityCanvas.style.display = 'none';
+}
+
 function loadSubtitleOctopus(video: HTMLVideoElement, subContent: string) {
   console.log('[Subarashi] Loading SubtitlesOctopus library...');
   console.log('[Subarashi] Subtitle content length:', subContent.length);
@@ -107,7 +116,7 @@ function loadSubtitleOctopus(video: HTMLVideoElement, subContent: string) {
     });
 
     processLibassCanvas(document.querySelector('canvas.libassjs-canvas') as HTMLCanvasElement);
-
+    hideCrunchyCanvas();
     console.log('[Subarashi] SubtitlesOctopus initialized successfully');
   } catch (error) {
     console.error('[Subarashi] Error loading SubtitlesOctopus:', error);
