@@ -11,6 +11,7 @@ export default defineConfig({
       input: {
         popup: resolve(__dirname, 'src/popup.html'),
         content: resolve(__dirname, 'src/content.ts'),
+        interceptor: resolve(__dirname, 'src/interceptor.ts'),
       },
       output: {
         entryFileNames: (chunkInfo) => {
