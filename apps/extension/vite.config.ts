@@ -1,11 +1,16 @@
 import { defineConfig } from "vite";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 import { resolve } from "path";
+import { manifestTransform } from "./vite-plugin-manifest";
+
+// Determine browser target from environment variable
+const isFirefox = process.env.BROWSER === "firefox";
+const outDir = isFirefox ? "../build-firefox" : "../build";
 
 export default defineConfig({
   root: "src",
   build: {
-    outDir: "../build",
+    outDir,
     emptyOutDir: true,
     rollupOptions: {
       input: {
@@ -52,6 +57,8 @@ export default defineConfig({
         },
       ],
     }),
+    // Only strip Firefox settings for Chrome builds
+    manifestTransform({ stripFirefox: !isFirefox, outDir }),
   ],
   resolve: {
     alias: {

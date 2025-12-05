@@ -8,50 +8,55 @@ Subarashi is a cross-browser (Chrome & Firefox) Manifest V3 extension that loads
 
 ## Project Structure
 
+This is a monorepo using Turbo. The extension code is located at `apps/extension/`.
+
 ```
-src/
-  popup.html          - Extension popup UI
-  popup.ts            - Popup logic (uses webextension-polyfill for cross-browser compatibility)
-  content.ts          - Content script for Crunchyroll pages
-static/
-  JavascriptSubtitlesOctopus/  - Third-party subtitle rendering library
-  sub.ass             - Subtitle file
-manifest.json         - Chrome extension manifest (root)
-manifest-firefox.json - Firefox extension manifest (root)
-vite.config.ts        - Vite build config for Chrome
-vite.config.firefox.ts - Vite build config for Firefox
-build/                - Chrome build output directory
-build-firefox/        - Firefox build output directory
+apps/extension/
+  src/
+    popup.html          - Extension popup UI
+    popup.ts            - Popup logic (uses webextension-polyfill for cross-browser compatibility)
+    content.ts          - Content script for Crunchyroll pages
+  static/
+    JavascriptSubtitlesOctopus/  - Third-party subtitle rendering library
+    sub.ass             - Subtitle file
+  manifest.json         - Unified manifest for both Chrome & Firefox
+  vite.config.ts        - Vite build config (supports both browsers via BROWSER env var)
+  vite-plugin-manifest.ts - Custom Vite plugin to strip Firefox settings for Chrome
+  build/                - Chrome build output directory
+  build-firefox/        - Firefox build output directory
 ```
 
 ## Build Commands
 
+Run these commands from the root of the monorepo:
+
 ```bash
 # Chrome production build
-pnpm build
+bun run build
 
 # Chrome development watch mode
-pnpm dev
+bun run dev
 
-# Firefox production build
-pnpm build:firefox
+# Firefox production build (from apps/extension)
+cd apps/extension && bun run build:firefox
 
-# Firefox development watch mode
-pnpm dev:firefox
+# Firefox development watch mode (from apps/extension)
+cd apps/extension && bun run dev:firefox
 
-# Build both Chrome and Firefox
-pnpm build:all
+# Build both Chrome and Firefox (from apps/extension)
+cd apps/extension && bun run build:all
 
-# Watch both Chrome and Firefox (in parallel)
-pnpm dev:all
+# Watch both Chrome and Firefox in parallel (from apps/extension)
+cd apps/extension && bun run dev:all
 ```
 
 The build process uses Vite:
 - Compiles TypeScript files from `src/` to JavaScript
 - Bundles popup.ts with module support and webextension-polyfill for cross-browser API compatibility
 - Preserves IIFE wrapper for content.ts (required for Chrome extension content scripts)
-- **Chrome build**: Copies `manifest.json` from root and static assets from `static/` to `build/`
-- **Firefox build**: Copies `manifest-firefox.json` (renamed to manifest.json) and static assets to `build-firefox/`
+- Uses `BROWSER` environment variable to determine target browser
+- **Chrome build** (default): Outputs to `build/`, strips `browser_specific_settings` via custom Vite plugin
+- **Firefox build** (`BROWSER=firefox`): Outputs to `build-firefox/`, keeps `browser_specific_settings` intact
 - Outputs: `popup.html`, `popup.js`, `content.js`, `manifest.json`, etc. in respective build directories
 
 ## Architecture
@@ -73,14 +78,17 @@ The build process uses Vite:
 
 ### Key Technical Details
 
-- **Build Tool**: Vite with vite-plugin-static-copy
+- **Monorepo Setup**: Uses Turbo for task orchestration and Bun as package manager
+- **Build Tool**: Vite with vite-plugin-static-copy and custom manifest transform plugin
 - **Cross-Browser Compatibility**: Uses webextension-polyfill to provide unified `browser.*` API for Chrome and Firefox
-- **Vite Configs**:
-  - `vite.config.ts`: Chrome build, outputs to `build/`, copies `manifest.json`
-  - `vite.config.firefox.ts`: Firefox build, outputs to `build-firefox/`, copies `manifest-firefox.json` (renamed to manifest.json)
-- **Manifests**:
-  - `manifest.json`: Chrome-specific manifest (standard MV3)
-  - `manifest-firefox.json`: Firefox-specific manifest with `browser_specific_settings.gecko` and extension ID
+- **Vite Config**:
+  - Single `vite.config.ts` supports both browsers via `BROWSER` environment variable
+  - Chrome build (default): outputs to `build/`, uses `vite-plugin-manifest.ts` to strip Firefox-specific settings
+  - Firefox build (`BROWSER=firefox`): outputs to `build-firefox/`, keeps manifest unchanged
+- **Unified Manifest**:
+  - Single `manifest.json` works for both browsers
+  - Contains `browser_specific_settings.gecko` for Firefox (extension ID, minimum version 128+)
+  - Chrome build automatically removes `browser_specific_settings` via custom Vite plugin
 - **Host Permissions**: Only works on `*://*.crunchyroll.com/*`
 - **Web Accessible Resources**: JavascriptSubtitlesOctopus JS files and `sub.ass` are exposed to Crunchyroll pages
 - **CSP Policy**: Allows WASM execution via `'wasm-unsafe-eval'` for JavascriptSubtitlesOctopus
