@@ -4,12 +4,14 @@
   "private": true,
   "scripts": {
     "deploy": "bun cfman wrangler --account=\"subarashi\" deploy",
+    "deploy:prod": "bun cfman wrangler --account=\"subarashi\" deploy --env=production",
     "deploy:w": "wrangler deploy",
     "dev": "bun cfman wrangler --account=\"subarashi\"  dev",
     "start": "wrangler dev",
     "test": "vitest",
     "cf-typegen": "wrangler types",
-    "dev:db": "bun cfman wrangler --account=\"subarashi\" d1 execute subarashi_db --local --file=./src/db/schema.sql"
+    "db:dev": "bun cfman wrangler --account=\"subarashi\" d1 execute subarashi_db --local --file=./src/db/schema.sql",
+    "db:prod": "bun cfman wrangler --account=\"subarashi\" d1 execute subarashi_db --env=production --file=./src/db/schema.sql --remote"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.8.19",

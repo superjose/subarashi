@@ -1,0 +1,2 @@
+ALTER TABLE Chapters
+ADD COLUMN chapterNumber SMALLINT UNSIGNED;

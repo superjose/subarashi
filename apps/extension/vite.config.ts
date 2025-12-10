@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 import { resolve } from "path";
 import { manifestTransform } from "./vite-plugin-manifest";
@@ -7,7 +7,11 @@ import { manifestTransform } from "./vite-plugin-manifest";
 const isFirefox = process.env.BROWSER === "firefox";
 const outDir = isFirefox ? "../build-firefox" : "../build";
 
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  // Load env file based on `mode` in the current working directory.
+  const env = loadEnv(mode, process.cwd(), '');
+
+  return {
   root: "src",
   build: {
     outDir,
@@ -65,4 +69,10 @@ export default defineConfig({
       "@": resolve(__dirname, "src"),
     },
   },
+  // Optional: explicitly define environment variables for the client
+  define: {
+    'import.meta.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL),
+    // Add other env vars as needed
+  },
+};
 });

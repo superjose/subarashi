@@ -23,6 +23,16 @@
     },
   ],
   /**
+   * R2 Object Storage
+   * Default environment uses the subarashi-subs bucket
+   */
+  "r2_buckets": [
+    {
+      "binding": "SUBARASHI_SUBS",
+      "bucket_name": "subarashi-subs",
+    },
+  ],
+  /**
    * Environment-specific configurations
    */
   "env": {
@@ -32,6 +42,13 @@
           "binding": "subarashi_db",
           "database_name": "subarashi-db",
           "database_id": "4655c0a0-f02d-4e4f-9bf7-cfaa8a2c8af8",
+          "remote": true,
+        },
+      ],
+      "r2_buckets": [
+        {
+          "binding": "SUBARASHI_SUBS",
+          "bucket_name": "subarashi-subs",
         },
       ],
     },

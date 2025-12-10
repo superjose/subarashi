@@ -1,5 +1,10 @@
+/**
+ * The main JavaScript entry function for the extension
+ */
+
 import browser from "webextension-polyfill";
 import { MessageData } from "./typings/types";
+import { getContext } from "./shared/context";
 
 async function sendMessage(sendData: MessageData) {
   // Possible performance increase: cache the browser.tabs.query.
@@ -31,6 +36,9 @@ async function sendMessage(sendData: MessageData) {
 }
 
 function popup() {
+  const context = getContext();
+
+  console.log(context.env.VITE_API_URL);
   const loadSubsBtn = document.getElementById("js-load-subtitles");
   const unloadSubsBtn = document.getElementById("js-unload-subtitles");
 
