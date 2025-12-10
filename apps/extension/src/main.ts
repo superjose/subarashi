@@ -3,54 +3,16 @@
  */
 
 import browser from "webextension-polyfill";
-import { MessageData } from "./typings/types";
-import { getContext } from "./shared/context";
+import { AppContext, getContext } from "./shared/context";
+import { sendMessage } from "./shared/message";
+import { api } from "./api/api";
 
-async function sendMessage(sendData: MessageData) {
-  // Possible performance increase: cache the browser.tabs.query.
-  const [tab] = await browser.tabs.query({
-    active: true,
-    currentWindow: true,
-  });
-  if (!tab.id) {
-    console.error("[Subarashi Popup] No active tab ID");
-    return;
-  }
-
-  if (!tab.url?.includes("crunchyroll.com")) {
-    console.warn(
-      "[Subarashi Popup] Subarashi is only supported on Crunchyroll"
-    );
-    return;
-  }
-  await browser.scripting.executeScript({
-    target: { tabId: tab.id, allFrames: true },
-    func: (dataString: string) => {
-      // This runs in the MAIN world of each frame
-      console.log("[Subarashi Injected] Sending load subtitles message");
-      const data = JSON.parse(dataString);
-      window.postMessage(data, "*");
-    },
-    args: [JSON.stringify(sendData)],
-  });
-}
-
-function popup() {
-  const context = getContext();
-
-  console.log(context.env.VITE_API_URL);
+function load(context: AppContext) {
   const loadSubsBtn = document.getElementById("js-load-subtitles");
-  const unloadSubsBtn = document.getElementById("js-unload-subtitles");
-
   if (!loadSubsBtn) {
     console.error("[Subarashi Popup] Load subtitles button not found");
     return;
   }
-  if (!unloadSubsBtn) {
-    console.error("[Subarashi Popup] Unload subtitles button not found");
-    return;
-  }
-
   loadSubsBtn.addEventListener("click", async () => {
     console.log("[Subarashi Popup] Button clicked");
 
@@ -58,9 +20,15 @@ function popup() {
 
     try {
       // Load the subtitle file content
-      const subUrl = browser.runtime.getURL("sub.ass");
-      const response = await fetch(subUrl);
-      const subContent = await response.text();
+      // const subUrl = browser.runtime.getURL("sub.ass");
+      // const response = await fetch(subUrl);
+      // const subContent = await response.text();
+
+      const result = await context.httpClient.get(
+        api.subtitles.chapters("GYQ4MW246", "G6Q4MK3GR")
+      );
+      const subContent = await result.text();
+      console.log("Sub content", subContent);
 
       console.log(
         "[Subarashi Popup] Subtitle file loaded, length:",
@@ -85,10 +53,24 @@ function popup() {
       console.error("[Subarashi Popup] Error:", error);
     }
   });
+}
+function unload() {
+  const unloadSubsBtn = document.getElementById("js-unload-subtitles");
+
+  if (!unloadSubsBtn) {
+    console.error("[Subarashi Popup] Unload subtitles button not found");
+    return;
+  }
 
   unloadSubsBtn.addEventListener("click", async () => {
     await sendMessage({ type: "SUBARASHI_UNLOAD_SUBTITLES" });
   });
 }
 
-popup();
+function main() {
+  const context = getContext();
+  load(context);
+  unload();
+}
+
+main();

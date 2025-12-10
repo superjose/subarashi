@@ -22,6 +22,6 @@
       "cache": false,
       "persistent": true
     },
-    "deploy": {}
+    "deploy:prod": {}
   }
 }

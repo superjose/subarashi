@@ -2,8 +2,8 @@ export default {
   async fetch(request, env, ctx): Promise<Response> {
     const { pathname } = new URL(request.url);
 
-    // Match pattern: /api/subtitles/:seriesId/:chapterId
-    const subtitleMatch = pathname.match(/^\/api\/subtitles\/([^\/]+)\/([^\/]+)$/);
+    // Match pattern: /api/subtitles/series/:seriesId/:chapterId
+    const subtitleMatch = pathname.match(/^\/api\/subtitles\/series\/([^\/]+)\/([^\/]+)$/);
 
     if (subtitleMatch) {
       const [, seriesId, chapterId] = subtitleMatch;
@@ -63,7 +63,7 @@ export default {
     }
 
     return new Response(
-      "Call /api/beverages to see everyone who works at Bs Beverages\nCall /api/subtitles/:seriesId/:chapterId to fetch subtitle files"
+      "Call /api/beverages to see everyone who works at Bs Beverages\nCall /api/subtitles/series/:seriesId/:chapterId to fetch subtitle files"
     );
   },
 } satisfies ExportedHandler<Env>;
