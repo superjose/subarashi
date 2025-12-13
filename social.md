@@ -1,23 +1,23 @@
-Making Crunchy Subs Better!
+We're close on releasing the MVP!
 
-We will continue configuring a backend using Cloudflare to inject Romaji subtitles into Crunchyroll
+We are making crunchyroll subtitles better:
 
-We will inject out first subtitles from our backend!
-
-This will add notable attack names in Romaji for series like One Piece, Naruto, and more through a Chrome extension.
+- Romanized/Romaji text for series like One Piece.
+- Sharper text
+- Karaoke-styled openings (later)
 
 💻 GOING LIVE:
-https://x.com/i/broadcasts/1BdGYZowmjLJX
+https://youtu.be/nmDx8MqyfMo
+https://x.com/i/broadcasts/1mnxeNOLQpLKX
 https://twitch.tv/javiasilis
-https://x.com/i/broadcasts/1BdGYZowmjLJX
 
 Currently Building (Open Source):
 
 Crunchyroll Fansubbing (Injects a fancier styling, romaji, and more to Crunchyroll series like One Piece and Naruto)
 
 Todo:
-
-⭕️ Make our first request from the cloudflare backend. Fetch the .ass file and inject it into the stream!
+⭕️ Work on UI/UX
+⭕️ Finalize feature-set.
 
 So far:
 
@@ -30,3 +30,4 @@ Todo:
 ✅ Understanding how extensions work (First time building a Chrome/Firefox extension - Manifest V3) ✅ Injecting the first custom .ass file within a Crunchyroll
 ✅ Happy dancing after the first milestone!
 ✅ Fixing aesthetics and rendering the subtitles properly
+✅ Make our first request from the cloudflare backend. Fetch the .ass file and inject it into the stream!

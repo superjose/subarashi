@@ -11,12 +11,22 @@
     "test": "vitest",
     "cf-typegen": "wrangler types",
     "db:dev": "bun cfman wrangler --account=\"subarashi\" d1 execute subarashi_db --local --file=./src/db/schema.sql",
-    "db:prod": "bun cfman wrangler --account=\"subarashi\" d1 execute subarashi_db --env=production --file=./src/db/schema.sql --remote"
+    "db:prod": "bun cfman wrangler --account=\"subarashi\" d1 execute subarashi_db --env=production --file=./src/db/schema.sql --remote",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "bun cfman wrangler --account=\"subarashi\" d1 migrations apply subarashi_db --local",
+    "db:migrate:prod": "bun cfman wrangler --account=\"subarashi\" d1 migrations apply subarashi_db --remote --env=production",
+    "db:studio": "drizzle-kit studio",
+    "db:push": "drizzle-kit push"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.8.19",
+    "drizzle-kit": "^0.31.8",
     "typescript": "^5.5.2",
     "vitest": "~3.2.0",
     "wrangler": "^4.53.0"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.1",
+    "hono": "^4.10.8"
   }
 }
